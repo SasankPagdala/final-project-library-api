@@ -1,9 +1,9 @@
 import * as listRepo from '../repositories/listRepo.js';
 
-/**
+/*
  *Get lists visible to the current user:
  *ADMIN: all lists
- *USER: only their own lists
+ *USER: only access their own lists
  */
 export async function getListsForUser(user) {
   if (user.role === 'ADMIN') {
@@ -12,10 +12,10 @@ export async function getListsForUser(user) {
   return listRepo.findAllByOwner(user.id);
 }
 
-/**
+/*
  *Get a single list by id with authorization:
  *ADMIN: can view any
- *USER: only lists they own
+ *USER: only access lists they own
  */
 export async function getListByIdForUser(id, user) {
   const list = await listRepo.findById(id);
