@@ -1,0 +1,125 @@
+get:
+  summary: Get category by ID
+  tags:
+    - Categories
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    '200':
+      description: Category details
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Category.yaml
+    '400':
+      description: Invalid ID format
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '404':
+      description: Category not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml
+put:
+  summary: Update a category (admin only)
+  tags:
+    - Categories
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/CategoryCreateRequest.yaml
+  responses:
+    '200':
+      description: Updated category
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Category.yaml
+    '400':
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '403':
+      description: Forbidden (non-admin)
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ForbiddenError.yaml
+    '404':
+      description: Category not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml
+delete:
+  summary: Delete a category (admin only)
+  tags:
+    - Categories
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    '204':
+      description: Category deleted
+    '400':
+      description: Invalid ID format
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '403':
+      description: Forbidden (non-admin)
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ForbiddenError.yaml
+    '404':
+      description: Category not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml

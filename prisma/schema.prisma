@@ -1,15 +1,95 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PermissionLevel {
+  VIEW
+  EDIT
+}
+
+model User {
+  id           Int         @id @default(autoincrement())
+  username     String      @unique
+  email        String      @unique
+  passwordHash String
+  role         Role        @default(USER)
+  createdAt    DateTime    @default(now())
+
+  // Relations
+  lists        List[]         // lists owned by this user
+  shares       ListShare[]    @relation("SharesWithUser")
+}
+
+model List {
+  id          Int      @id @default(autoincrement())
+  ownerId     Int
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner   User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  items   ListItem[]
+  shares  ListShare[]
+}
+
+model Category {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  description  String?
+  displayOrder Int?
+  createdAt    DateTime @default(now())
+  items        Item[]
+}
+
+model Item {
+  id          Int      @id @default(autoincrement())
+  name        String
+  defaultUnit String?
+  createdAt   DateTime @default(now())
+
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  listItems   ListItem[]
+}
+
+model ListItem {
+  id          Int      @id @default(autoincrement())
+  listId      Int
+  itemId      Int
+  quantity    Float?
+  unit        String?
+  isPurchased Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  list  List @relation(fields: [listId], references: [id], onDelete: Cascade)
+  item  Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+model ListShare {
+  id               Int             @id @default(autoincrement())
+  listId           Int
+  sharedWithUserId Int
+  permissionLevel  PermissionLevel @default(VIEW)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  list           List @relation(fields: [listId], references: [id], onDelete: Cascade)
+  sharedWithUser User @relation("SharesWithUser", fields: [sharedWithUserId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, sharedWithUserId])
 }

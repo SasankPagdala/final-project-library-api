@@ -1,0 +1,82 @@
+openapi: 3.1.0
+info:
+  title: Final Project – Shopping List API
+  version: 1.0.0
+  description: >
+    REST API for managing users, lists, items, categories, and sharing. Supports
+    JWT authentication and role-based / ownership-based authorization.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthLoginRequest:
+      $ref: ./components/schemas/AuthLoginRequest.yaml
+
+    AuthLoginResponse:
+      $ref: ./components/schemas/AuthLoginResponse.yaml
+
+    AuthRegisterRequest:
+      $ref: ./components/schemas/AuthRegisterRequest.yaml
+
+    Category:
+      $ref: ./components/schemas/Category.yaml
+
+    CategoryCreateRequest:
+      $ref: ./components/schemas/CategoryCreateRequest.yaml
+
+    ForbiddenError:
+      $ref: ./components/schemas/ForbiddenError.yaml
+
+    Item:
+      $ref: ./components/schemas/Item.yaml
+
+    ItemCreateRequest:
+      $ref: ./components/schemas/ItemCreateRequest.yaml
+
+    List:
+      $ref: ./components/schemas/List.yaml
+
+    ListCreateRequest:
+      $ref: ./components/schemas/ListCreateRequest.yaml
+
+    NotFoundError:
+      $ref: ./components/schemas/NotFoundError.yaml
+
+    UnauthorizedError:
+      $ref: ./components/schemas/UnauthorizedError.yaml
+
+    User:
+      $ref: ./components/schemas/User.yaml
+
+    ValidationError:
+      $ref: ./components/schemas/ValidationError.yaml
+paths:
+  /health:
+    $ref: paths/health.yaml
+  /auth/register:
+    $ref: paths/auth_register.yaml
+  /auth/login:
+    $ref: paths/auth_login.yaml
+  /auth/me:
+    $ref: paths/auth_me.yaml
+  /lists:
+    $ref: paths/lists.yaml
+  /lists/{id}:
+    $ref: paths/lists_{id}.yaml
+  /categories:
+    $ref: paths/categories.yaml
+  /categories/{id}:
+    $ref: paths/categories_{id}.yaml
+  /items:
+    $ref: paths/items.yaml
+  /items/{id}:
+    $ref: paths/items_{id}.yaml
+  /users/{id}:
+    $ref: paths/users_{id}.yaml

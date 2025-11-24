@@ -1,0 +1,132 @@
+get:
+  summary: Get a list by ID (owner or admin)
+  tags:
+    - Lists
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: List ID
+  responses:
+    '200':
+      description: List details
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/List.yaml
+    '400':
+      description: Invalid ID format
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '403':
+      description: Not the owner and not admin
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ForbiddenError.yaml
+    '404':
+      description: List not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml
+put:
+  summary: Update a list (owner or admin)
+  tags:
+    - Lists
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/ListCreateRequest.yaml
+  responses:
+    '200':
+      description: Updated list
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/List.yaml
+    '400':
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ForbiddenError.yaml
+    '404':
+      description: List not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml
+delete:
+  summary: Delete a list (owner or admin)
+  tags:
+    - Lists
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    '204':
+      description: List deleted
+    '400':
+      description: Invalid ID format
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ForbiddenError.yaml
+    '404':
+      description: List not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml
