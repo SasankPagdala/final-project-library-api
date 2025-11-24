@@ -1,0 +1,14 @@
+type: object
+properties:
+  error:
+    type: string
+    example: Validation failed
+  details:
+    type: array
+    items:
+      type: string
+    example:
+      - name is required and must be a string
+required:
+  - error
+  - details
