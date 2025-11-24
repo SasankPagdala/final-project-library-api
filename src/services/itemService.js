@@ -1,7 +1,7 @@
 import * as itemRepo from '../repositories/itemRepo.js';
 
-export async function getAllItems() {
-  return itemRepo.findAll();
+export async function getAllItems(filters) {
+  return itemRepo.findAll(filters);
 }
 
 export async function getItemById(id) {

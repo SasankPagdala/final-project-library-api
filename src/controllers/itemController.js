@@ -2,7 +2,20 @@ import * as itemService from '../services/itemService.js';
 
 export async function getItems(req, res, next) {
   try {
-    const items = await itemService.getAllItems();
+    const filters = {};
+    
+    if (req.query.categoryId) {
+      const categoryId = parseInt(req.query.categoryId, 10);
+      if (Number.isNaN(categoryId)) {
+        return res.status(400).json({
+          error: 'Validation failed',
+          details: ['categoryId must be a number'],
+        });
+      }
+      filters.categoryId = categoryId;
+    }
+    
+    const items = await itemService.getAllItems(filters);
     res.status(200).json(items);
   } catch (err) {
     next(err);

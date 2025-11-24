@@ -1,0 +1,1158 @@
+openapi: 3.0.3
+info:
+  title: Final Project – Shopping List API
+  version: 1.0.0
+  description: >
+    REST API for managing users, lists, items, categories, and sharing.
+    Supports JWT authentication and role-based / ownership-based authorization.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  # Replace this with our Render URL when deployed
+  # - url: https://your-final-project-api.onrender.com
+  #   description: Production (Render)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        role:
+          type: string
+          enum: [USER, ADMIN]
+          example: USER
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, username, email, role]
+
+    AuthRegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+      required: [username, email, password]
+
+    AuthLoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@example.com
+        password:
+          type: string
+          format: password
+          example: AdminPass123!
+      required: [email, password]
+
+    AuthLoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token to use in Authorization header
+        user:
+          $ref: '#/components/schemas/User'
+      required: [token, user]
+
+    List:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        ownerId:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Weekly Groceries
+        description:
+          type: string
+          nullable: true
+          example: Main family grocery list
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, ownerId, name, isActive]
+
+    ListCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Weekly Groceries
+        description:
+          type: string
+          nullable: true
+          example: Main family grocery list
+        isActive:
+          type: boolean
+          example: true
+      required: [name]
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Produce
+        description:
+          type: string
+          nullable: true
+          example: Fresh fruits and vegetables
+        displayOrder:
+          type: integer
+          nullable: true
+          example: 1
+      required: [id, name]
+
+    CategoryCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Produce
+        description:
+          type: string
+          nullable: true
+          example: Fresh fruits and vegetables
+        displayOrder:
+          type: integer
+          nullable: true
+          example: 1
+      required: [name]
+
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        name:
+          type: string
+          example: Bananas
+        defaultUnit:
+          type: string
+          nullable: true
+          example: bunch
+        categoryId:
+          type: integer
+          example: 1
+      required: [id, name, categoryId]
+
+    ItemCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Bananas
+        defaultUnit:
+          type: string
+          nullable: true
+          example: bunch
+        categoryId:
+          type: integer
+          example: 1
+      required: [name, categoryId]
+
+    ListShare:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        listId:
+          type: integer
+          example: 1
+        sharedWithUserId:
+          type: integer
+          example: 2
+        permissionLevel:
+          type: string
+          enum: [VIEW, EDIT]
+          example: EDIT
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        sharedWithUser:
+          type: object
+          properties:
+            id:
+              type: integer
+            username:
+              type: string
+            email:
+              type: string
+      required: [id, listId, sharedWithUserId, permissionLevel]
+
+    ListShareCreateRequest:
+      type: object
+      properties:
+        sharedWithUserId:
+          type: integer
+          example: 2
+        permissionLevel:
+          type: string
+          enum: [VIEW, EDIT]
+          example: EDIT
+      required: [sharedWithUserId]
+
+    ListShareUpdateRequest:
+      type: object
+      properties:
+        permissionLevel:
+          type: string
+          enum: [VIEW, EDIT]
+          example: VIEW
+      required: [permissionLevel]
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Validation failed
+        details:
+          type: array
+          items:
+            type: string
+          example:
+            - "name is required and must be a string"
+      required: [error, details]
+
+    UnauthorizedError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Authentication required
+      required: [error]
+
+    ForbiddenError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Forbidden
+      required: [error]
+
+    NotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Resource not found
+      required: [error]
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      tags: [System]
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error or email already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /auth/login:
+    post:
+      summary: Log in and obtain a JWT
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthLoginResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+
+  /auth/me:
+    get:
+      summary: Get current logged-in user
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+
+  /lists:
+    get:
+      summary: Get lists visible to the current user
+      tags: [Lists]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of lists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/List'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+    post:
+      summary: Create a new list for the current user
+      tags: [Lists]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListCreateRequest'
+      responses:
+        '201':
+          description: List created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+
+  /lists/{id}:
+    get:
+      summary: Get a list by ID (owner or admin)
+      tags: [Lists]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: List ID
+      responses:
+        '200':
+          description: List details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Not the owner and not admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: List not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    put:
+      summary: Update a list (owner or admin)
+      tags: [Lists]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListCreateRequest'
+      responses:
+        '200':
+          description: Updated list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: List not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    delete:
+      summary: Delete a list (owner or admin)
+      tags: [Lists]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: List deleted
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: List not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  /categories:
+    get:
+      summary: Get all categories
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+    post:
+      summary: Create a new category (admin only)
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Forbidden (non-admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /categories/{id}:
+    get:
+      summary: Get category by ID
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    put:
+      summary: Update a category (admin only)
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '200':
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Forbidden (non-admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    delete:
+      summary: Delete a category (admin only)
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Category deleted
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Forbidden (non-admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  /items:
+    get:
+      summary: Get all items
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+    post:
+      summary: Create a new item (admin only)
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemCreateRequest'
+      responses:
+        '201':
+          description: Item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Forbidden (non-admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /items/{id}:
+    get:
+      summary: Get item by ID
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Item details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    put:
+      summary: Update an item (admin only)
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemCreateRequest'
+      responses:
+        '200':
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Forbidden (non-admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    delete:
+      summary: Delete an item (admin only)
+      tags: [Items]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Item deleted
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Forbidden (non-admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  /shares/shared-with-me:
+    get:
+      summary: Get all lists shared with the current user
+      tags: [List Sharing]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lists shared with user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    listId:
+                      type: integer
+                    permissionLevel:
+                      type: string
+                      enum: [VIEW, EDIT]
+                    list:
+                      $ref: '#/components/schemas/List'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+
+  /shares/lists/{listId}/shares:
+    get:
+      summary: Get all users a list is shared with (owner only)
+      tags: [List Sharing]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: List ID
+      responses:
+        '200':
+          description: List of shares
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListShare'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Not the list owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: List not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    post:
+      summary: Share a list with another user (owner only)
+      tags: [List Sharing]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListShareCreateRequest'
+      responses:
+        '201':
+          description: List shared successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListShare'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Not the list owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: List or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: List already shared with this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: List is already shared with this user
+
+  /shares/lists/{listId}/shares/{shareId}:
+    put:
+      summary: Update share permission (owner only)
+      tags: [List Sharing]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListShareUpdateRequest'
+      responses:
+        '200':
+          description: Share updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListShare'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Not the list owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Share not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    delete:
+      summary: Remove a share (owner only)
+      tags: [List Sharing]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Share removed successfully
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Not the list owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Share not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
