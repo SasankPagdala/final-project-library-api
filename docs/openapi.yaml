@@ -82,3 +82,10 @@ paths:
     $ref: paths/items_{id}.yaml
   /users/{id}:
     $ref: paths/users_{id}.yaml
+
+  /auth/change-password:
+    $ref: paths/auth_change-password.yaml
+  /auth/reset-password:
+    $ref: paths/auth_reset-password.yaml
+  /users/{id}/reset-password:
+    $ref: paths/users_{id}_reset-password.yaml

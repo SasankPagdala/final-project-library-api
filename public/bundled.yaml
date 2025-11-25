@@ -754,6 +754,140 @@ paths:
           description: Forbidden user cannot delete this account
         '404':
           description: User not found
+  /auth/change-password:
+    post:
+      summary: Change password (authenticated user)
+      description: |
+        Allows the currently authenticated user to change their password by providing the current password and a new password.
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword:
+                  type: string
+                  format: password
+                  example: UserPass123!
+                newPassword:
+                  type: string
+                  format: password
+                  example: NewUserPass456!
+              required:
+                - currentPassword
+                - newPassword
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password updated successfully
+        '400':
+          description: Missing fields or invalid current password
+        '401':
+          description: Missing or invalid JWT
+  /auth/reset-password:
+    post:
+      summary: Reset password (owner only, using username and email)
+      description: |
+        Allows a user to reset their own password by providing matching username and email. No authentication is required, but both username and email must match an existing user.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: johndoe
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                newPassword:
+                  type: string
+                  format: password
+                  example: ResetUserPass789!
+              required:
+                - username
+                - email
+                - newPassword
+      responses:
+        '200':
+          description: Password has been reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password has been reset successfully
+        '400':
+          description: Missing fields or validation error
+        '404':
+          description: User not found
+  /users/{id}/reset-password:
+    put:
+      summary: Admin reset user password
+      description: |
+        Allows an admin to reset a user's password by user ID.
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the user whose password will be reset
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  format: password
+                  example: AdminReset999!
+              required:
+                - newPassword
+      responses:
+        '200':
+          description: Password has been reset successfully by admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password for user 5 has been reset by admin.
+        '400':
+          description: Missing or invalid data
+        '401':
+          description: Missing or invalid JWT
+        '403':
+          description: Forbidden – only admins can reset other users' passwords
+        '404':
+          description: User not found
 components:
   securitySchemes:
     bearerAuth:
