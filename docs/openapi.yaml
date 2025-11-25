@@ -6,6 +6,8 @@ info:
     REST API for managing users, lists, items, categories, and sharing. Supports
     JWT authentication and role-based / ownership-based authorization.
 servers:
+  - url: https://final-project-library-api-1.onrender.com
+    description: Production
   - url: http://localhost:3000
     description: Local development
 components:
@@ -46,15 +48,6 @@ components:
     ListCreateRequest:
       $ref: ./components/schemas/ListCreateRequest.yaml
 
-    ListShare:
-      $ref: ./components/schemas/ListShare.yaml
-
-    ListShareCreateRequest:
-      $ref: ./components/schemas/ListShareCreateRequest.yaml
-
-    ListShareUpdateRequest:
-      $ref: ./components/schemas/ListShareUpdateRequest.yaml
-
     NotFoundError:
       $ref: ./components/schemas/NotFoundError.yaml
 
@@ -89,15 +82,3 @@ paths:
     $ref: paths/items_{id}.yaml
   /users/{id}:
     $ref: paths/users_{id}.yaml
-  /shares/shared-with-me:
-    $ref: paths/shares_shared-with-me.yaml
-  /shares/lists/{listId}/shares:
-    $ref: paths/shares_lists_{listId}_shares.yaml
-  /shares/lists/{listId}/shares/{shareId}:
-    $ref: paths/shares_lists_{listId}_shares_{shareId}.yaml
-  /auth/change-password:
-    $ref: paths/auth_change-password.yaml
-  /auth/reset-password:
-    $ref: paths/auth_reset-password.yaml
-  /users/{id}/reset-password:
-    $ref: paths/users_{id}_reset-password.yaml
