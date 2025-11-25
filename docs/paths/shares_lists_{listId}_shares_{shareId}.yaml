@@ -1,0 +1,97 @@
+put:
+  summary: Update share permission
+  tags: [List Sharing]
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: listId
+      in: path
+      required: true
+      schema:
+        type: integer
+    - name: shareId
+      in: path
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/ListShareUpdateRequest.yaml
+  responses:
+    '200':
+      description: Share updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ListShare.yaml
+    '400':
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '403':
+      description: Not the list owner
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ForbiddenError.yaml
+    '404':
+      description: Share not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml
+
+delete:
+  summary: Remove a share
+  tags: [List Sharing]
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: listId
+      in: path
+      required: true
+      schema:
+        type: integer
+    - name: shareId
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    '204':
+      description: Share removed successfully
+    '400':
+      description: Invalid ID format
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '403':
+      description: Not the list owner
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ForbiddenError.yaml
+    '404':
+      description: Share not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml

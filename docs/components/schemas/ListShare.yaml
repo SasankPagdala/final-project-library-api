@@ -1,0 +1,31 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  listId:
+    type: integer
+    example: 1
+  sharedWithUserId:
+    type: integer
+    example: 2
+  permissionLevel:
+    type: string
+    enum: [VIEW, EDIT]
+    example: VIEW
+  createdAt:
+    type: string
+    format: date-time
+  updatedAt:
+    type: string
+    format: date-time
+  sharedWithUser:
+    type: object
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+      email:
+        type: string
+required: [id, listId, sharedWithUserId, permissionLevel]

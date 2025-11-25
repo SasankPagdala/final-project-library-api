@@ -46,6 +46,15 @@ components:
     ListCreateRequest:
       $ref: ./components/schemas/ListCreateRequest.yaml
 
+    ListShare:
+      $ref: ./components/schemas/ListShare.yaml
+
+    ListShareCreateRequest:
+      $ref: ./components/schemas/ListShareCreateRequest.yaml
+
+    ListShareUpdateRequest:
+      $ref: ./components/schemas/ListShareUpdateRequest.yaml
+
     NotFoundError:
       $ref: ./components/schemas/NotFoundError.yaml
 
@@ -80,3 +89,9 @@ paths:
     $ref: paths/items_{id}.yaml
   /users/{id}:
     $ref: paths/users_{id}.yaml
+  /shares/shared-with-me:
+    $ref: paths/shares_shared-with-me.yaml
+  /shares/lists/{listId}/shares:
+    $ref: paths/shares_lists_{listId}_shares.yaml
+  /shares/lists/{listId}/shares/{shareId}:
+    $ref: paths/shares_lists_{listId}_shares_{shareId}.yaml
