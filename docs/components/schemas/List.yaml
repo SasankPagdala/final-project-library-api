@@ -1,0 +1,29 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  ownerId:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: Weekly Groceries
+  description:
+    type: string
+    nullable: true
+    example: Main family grocery list
+  isActive:
+    type: boolean
+    example: true
+  createdAt:
+    type: string
+    format: date-time
+  updatedAt:
+    type: string
+    format: date-time
+required:
+  - id
+  - ownerId
+  - name
+  - isActive

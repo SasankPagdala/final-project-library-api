@@ -1,0 +1,23 @@
+post:
+  summary: Register a new user
+  tags:
+    - Auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/AuthRegisterRequest.yaml
+  responses:
+    '201':
+      description: User registered successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/User.yaml
+    '400':
+      description: Validation error or email already in use
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml

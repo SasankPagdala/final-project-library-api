@@ -1,0 +1,14 @@
+type: object
+properties:
+  name:
+    type: string
+    example: Weekly Groceries
+  description:
+    type: string
+    nullable: true
+    example: Main family grocery list
+  isActive:
+    type: boolean
+    example: true
+required:
+  - name

@@ -1,0 +1,19 @@
+get:
+  summary: Get current logged-in user
+  tags:
+    - Auth
+  security:
+    - bearerAuth: []
+  responses:
+    '200':
+      description: Current user profile
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/User.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
