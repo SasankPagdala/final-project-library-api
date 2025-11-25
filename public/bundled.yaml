@@ -752,6 +752,379 @@ paths:
           description: Forbidden user cannot delete this account
         '404':
           description: User not found
+  /shares/shared-with-me:
+    get:
+      summary: Get all lists shared with the current user
+      tags:
+        - List Sharing
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lists shared with user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    listId:
+                      type: integer
+                    permissionLevel:
+                      type: string
+                      enum:
+                        - VIEW
+                        - EDIT
+                    list:
+                      $ref: '#/components/schemas/List'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+  /shares/lists/{listId}/shares:
+    get:
+      summary: Get all users a list is shared with
+      tags:
+        - List Sharing
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: List ID
+      responses:
+        '200':
+          description: List of shares
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListShare'
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Not the list owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: List not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    post:
+      summary: Share a list with another user
+      tags:
+        - List Sharing
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListShareCreateRequest'
+      responses:
+        '201':
+          description: List shared successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListShare'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Not the list owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: List or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: List already shared with this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: List is already shared with this user
+  /shares/lists/{listId}/shares/{shareId}:
+    put:
+      summary: Update share permission
+      tags:
+        - List Sharing
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListShareUpdateRequest'
+      responses:
+        '200':
+          description: Share updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListShare'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Not the list owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Share not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    delete:
+      summary: Remove a share
+      tags:
+        - List Sharing
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Share removed successfully
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '403':
+          description: Not the list owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Share not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+  /auth/change-password:
+    post:
+      summary: Change password (authenticated user)
+      description: |
+        Allows the currently authenticated user to change their password by providing the current password and a new password.
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword:
+                  type: string
+                  format: password
+                  example: UserPass123!
+                newPassword:
+                  type: string
+                  format: password
+                  example: NewUserPass456!
+              required:
+                - currentPassword
+                - newPassword
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password updated successfully
+        '400':
+          description: Missing fields or invalid current password
+        '401':
+          description: Missing or invalid JWT
+  /auth/reset-password:
+    post:
+      summary: Reset password (owner only, using username and email)
+      description: |
+        Allows a user to reset their own password by providing matching username and email. No authentication is required, but both username and email must match an existing user.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: johndoe
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                newPassword:
+                  type: string
+                  format: password
+                  example: ResetUserPass789!
+              required:
+                - username
+                - email
+                - newPassword
+      responses:
+        '200':
+          description: Password has been reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password has been reset successfully
+        '400':
+          description: Missing fields or validation error
+        '404':
+          description: User not found
+  /users/{id}/reset-password:
+    put:
+      summary: Admin reset user password
+      description: |
+        Allows an admin to reset a user's password by user ID.
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the user whose password will be reset
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  format: password
+                  example: AdminReset999!
+              required:
+                - newPassword
+      responses:
+        '200':
+          description: Password has been reset successfully by admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password for user 5 has been reset by admin.
+        '400':
+          description: Missing or invalid data
+        '401':
+          description: Missing or invalid JWT
+        '403':
+          description: Forbidden – only admins can reset other users' passwords
+        '404':
+          description: User not found
 components:
   securitySchemes:
     bearerAuth:
@@ -927,6 +1300,70 @@ components:
           example: true
       required:
         - name
+    ListShare:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        listId:
+          type: integer
+          example: 1
+        sharedWithUserId:
+          type: integer
+          example: 2
+        permissionLevel:
+          type: string
+          enum:
+            - VIEW
+            - EDIT
+          example: VIEW
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        sharedWithUser:
+          type: object
+          properties:
+            id:
+              type: integer
+            username:
+              type: string
+            email:
+              type: string
+      required:
+        - id
+        - listId
+        - sharedWithUserId
+        - permissionLevel
+    ListShareCreateRequest:
+      type: object
+      properties:
+        sharedWithUserId:
+          type: integer
+          example: 2
+        permissionLevel:
+          type: string
+          enum:
+            - VIEW
+            - EDIT
+          default: VIEW
+          example: VIEW
+      required:
+        - sharedWithUserId
+    ListShareUpdateRequest:
+      type: object
+      properties:
+        permissionLevel:
+          type: string
+          enum:
+            - VIEW
+            - EDIT
+          example: EDIT
+      required:
+        - permissionLevel
     NotFoundError:
       type: object
       properties:
