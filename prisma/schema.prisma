@@ -5,7 +5,6 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 enum Role {
@@ -26,9 +25,18 @@ model User {
   role         Role        @default(USER)
   createdAt    DateTime    @default(now())
 
-  // Relations
-  lists        List[]         // lists owned by this user
-  shares       ListShare[]    @relation("SharesWithUser")
+  lists        List[]
+  shares       ListShare[] @relation("SharesWithUser")
+}
+
+model Category {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  description  String?
+  displayOrder Int?
+  createdAt    DateTime @default(now())
+  
+  items        Item[]
 }
 
 model List {
@@ -45,15 +53,6 @@ model List {
   shares  ListShare[]
 }
 
-model Category {
-  id           Int      @id @default(autoincrement())
-  name         String   @unique
-  description  String?
-  displayOrder Int?
-  createdAt    DateTime @default(now())
-  items        Item[]
-}
-
 model Item {
   id          Int      @id @default(autoincrement())
   name        String
@@ -61,7 +60,7 @@ model Item {
   createdAt   DateTime @default(now())
 
   categoryId  Int
-  category    Category @relation(fields: [categoryId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   listItems   ListItem[]
 }
