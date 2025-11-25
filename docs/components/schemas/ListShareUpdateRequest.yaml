@@ -1,0 +1,7 @@
+type: object
+properties:
+  permissionLevel:
+    type: string
+    enum: [VIEW, EDIT]
+    example: EDIT
+required: [permissionLevel]

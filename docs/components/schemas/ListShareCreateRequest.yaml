@@ -1,0 +1,11 @@
+type: object
+properties:
+  sharedWithUserId:
+    type: integer
+    example: 2
+  permissionLevel:
+    type: string
+    enum: [VIEW, EDIT]
+    default: VIEW
+    example: VIEW
+required: [sharedWithUserId]
