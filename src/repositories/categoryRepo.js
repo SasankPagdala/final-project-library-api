@@ -8,7 +8,7 @@ export async function findAll() {
 
 export async function findById(id) {
   return prisma.category.findUnique({
-    where: { id },
+    where: { id: Number(id) },
   });
 }
 
@@ -20,13 +20,13 @@ export async function create(data) {
 
 export async function update(id, data) {
   return prisma.category.update({
-    where: { id },
+    where: { id: Number(id) },
     data,
   });
 }
 
 export async function remove(id) {
   return prisma.category.delete({
-    where: { id },
+    where: { id: Number(id) },
   });
 }

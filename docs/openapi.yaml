@@ -95,3 +95,9 @@ paths:
     $ref: paths/shares_lists_{listId}_shares.yaml
   /shares/lists/{listId}/shares/{shareId}:
     $ref: paths/shares_lists_{listId}_shares_{shareId}.yaml
+  /auth/change-password:
+    $ref: paths/auth_change-password.yaml
+  /auth/reset-password:
+    $ref: paths/auth_reset-password.yaml
+  /users/{id}/reset-password:
+    $ref: paths/users_{id}_reset-password.yaml

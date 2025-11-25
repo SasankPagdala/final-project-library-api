@@ -18,7 +18,20 @@ export async function updateCategory(id, data) {
   return categoryRepo.update(id, { name, description, displayOrder });
 }
 
+// FIXED: handle P2003 from Prisma
 export async function deleteCategory(id) {
-  await categoryRepo.remove(id);
-  return true;
+  try {
+    await categoryRepo.remove(id);
+    return true;
+  } catch (err) {
+    // Foreign key violation: items still reference this category
+    if (err.code === 'P2003' && err.meta?.constraint?.includes('Item_categoryId_fkey')) {
+      const e = new Error(
+        'Cannot delete category because there are items assigned to it. Delete or reassign those items first.'
+      );
+      e.status = 409; // HTTP 409 Conflict
+      throw e;
+    }
+    throw err; // let other errors bubble
+  }
 }
