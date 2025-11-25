@@ -26,8 +26,18 @@ model User {
   createdAt    DateTime    @default(now())
 
   // Relations
-  lists        List[]         // lists owned by this user
-  shares       ListShare[]    @relation("SharesWithUser")
+  lists        List[]
+  shares       ListShare[] @relation("SharesWithUser")
+}
+
+model Category {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  description  String?
+  displayOrder Int?
+  createdAt    DateTime @default(now())
+  
+  items        Item[]
 }
 
 model List {
@@ -39,18 +49,9 @@ model List {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner   User       @relation(fields: [ownerId], references: [id])
+  owner   User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   items   ListItem[]
   shares  ListShare[]
-}
-
-model Category {
-  id           Int      @id @default(autoincrement())
-  name         String   @unique
-  description  String?
-  displayOrder Int?
-  createdAt    DateTime @default(now())
-  items        Item[]
 }
 
 model Item {
@@ -60,7 +61,7 @@ model Item {
   createdAt   DateTime @default(now())
 
   categoryId  Int
-  category    Category @relation(fields: [categoryId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   listItems   ListItem[]
 }
@@ -75,8 +76,8 @@ model ListItem {
   notes       String?
   createdAt   DateTime @default(now())
 
-  list  List @relation(fields: [listId], references: [id])
-  item  Item @relation(fields: [itemId], references: [id])
+  list  List @relation(fields: [listId], references: [id], onDelete: Cascade)
+  item  Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
 }
 
 model ListShare {
@@ -87,8 +88,8 @@ model ListShare {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
-  list           List @relation(fields: [listId], references: [id])
-  sharedWithUser User @relation("SharesWithUser", fields: [sharedWithUserId], references: [id])
+  list           List @relation(fields: [listId], references: [id], onDelete: Cascade)
+  sharedWithUser User @relation("SharesWithUser", fields: [sharedWithUserId], references: [id], onDelete: Cascade)
 
   @@unique([listId, sharedWithUserId])
 }
