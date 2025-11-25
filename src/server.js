@@ -1,5 +1,10 @@
 import express from 'express';
 import morgan from 'morgan';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const swaggerDocument = YAML.load(join(__dirname, '../docs/openapi.yaml'));
+
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
@@ -8,6 +13,7 @@ import listRoutes from './routes/listRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import itemRoutes from './routes/itemRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import listShareRoutes from './routes/listShareRoutes.js';
 
 
 const app = express();
@@ -22,7 +28,6 @@ app.use(morgan('tiny'));
 // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
@@ -32,6 +37,7 @@ app.use('/lists', listRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/items', itemRoutes);
 app.use('/users', userRoutes);
+app.use('/shares', listShareRoutes);
 
 // 404
 app.use((req, res, next) => {

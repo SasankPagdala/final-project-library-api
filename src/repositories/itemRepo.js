@@ -1,7 +1,14 @@
 import prisma from '../config/db.js';
 
-export async function findAll() {
+export async function findAll(filters = {}) {
+  const where = {};
+  
+  if (filters.categoryId) {
+    where.categoryId = filters.categoryId;
+  }
+  
   return prisma.item.findMany({
+    where,
     include: {
       category: true,
     },
