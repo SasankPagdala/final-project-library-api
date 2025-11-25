@@ -1,0 +1,103 @@
+get:
+  summary: Get a user profile
+  description: >
+    Returns the authenticated user's profile, or (if the requester is an admin)
+    any user's profile by ID.
+  tags:
+    - Users
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: ID of the user to retrieve
+      schema:
+        type: integer
+  responses:
+    '200':
+      description: User profile returned successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/User.yaml
+    '401':
+      description: Unauthorized – missing or invalid JWT
+    '403':
+      description: Forbidden – user cannot access this profile
+    '404':
+      description: User not found
+
+put:
+  summary: Update a user profile
+  description: >
+    Users can update their own profile. Admins can update any profile.
+    Password cannot be changed via this endpoint.
+  tags:
+    - Users
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: ID of the user to update
+      schema:
+        type: integer
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+              example: newname
+            email:
+              type: string
+              format: email
+              example: newemail@example.com
+          additionalProperties: false
+  responses:
+    '200':
+      description: User updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/User.yaml
+    '400':
+      description: Invalid update (e.g., duplicate email or forbidden field)
+    '401':
+      description: Unauthorized – missing or invalid JWT
+    '403':
+      description: Forbidden – user cannot update this profile
+    '404':
+      description: User not found
+
+delete:
+  summary: Delete a user account
+  description: >
+    Users can delete their own account. Admins can delete any account.
+    Deleting a user also deletes their lists, list shares, and list items
+    due to cascading rules in the database.
+  tags:
+    - Users
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: ID of the user to delete
+      schema:
+        type: integer
+  responses:
+    '204':
+      description: User deleted successfully, no content returned
+    '401':
+      description: Unauthorized missing or invalid JWT
+    '403':
+      description: Forbidden user cannot delete this account
+    '404':
+      description: User not found

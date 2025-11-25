@@ -1,0 +1,15 @@
+type: object
+properties:
+  name:
+    type: string
+    example: Produce
+  description:
+    type: string
+    nullable: true
+    example: Fresh fruits and vegetables
+  displayOrder:
+    type: integer
+    nullable: true
+    example: 1
+required:
+  - name

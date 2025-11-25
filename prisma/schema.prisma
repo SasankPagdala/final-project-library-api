@@ -5,6 +5,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 enum Role {
@@ -26,18 +27,8 @@ model User {
   createdAt    DateTime    @default(now())
 
   // Relations
-  lists        List[]
-  shares       ListShare[] @relation("SharesWithUser")
-}
-
-model Category {
-  id           Int      @id @default(autoincrement())
-  name         String   @unique
-  description  String?
-  displayOrder Int?
-  createdAt    DateTime @default(now())
-  
-  items        Item[]
+  lists        List[]         // lists owned by this user
+  shares       ListShare[]    @relation("SharesWithUser")
 }
 
 model List {
@@ -54,6 +45,15 @@ model List {
   shares  ListShare[]
 }
 
+model Category {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  description  String?
+  displayOrder Int?
+  createdAt    DateTime @default(now())
+  items        Item[]
+}
+
 model Item {
   id          Int      @id @default(autoincrement())
   name        String
@@ -61,7 +61,7 @@ model Item {
   createdAt   DateTime @default(now())
 
   categoryId  Int
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id])
 
   listItems   ListItem[]
 }
@@ -78,6 +78,20 @@ model ListItem {
 
   list  List @relation(fields: [listId], references: [id], onDelete: Cascade)
   item  Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+model ListShare {
+  id               Int             @id @default(autoincrement())
+  listId           Int
+  sharedWithUserId Int
+  permissionLevel  PermissionLevel @default(VIEW)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  list           List @relation(fields: [listId], references: [id], onDelete: Cascade)
+  sharedWithUser User @relation("SharesWithUser", fields: [sharedWithUserId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, sharedWithUserId])
 }
 
 model ListShare {

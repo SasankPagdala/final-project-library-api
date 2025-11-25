@@ -1,0 +1,125 @@
+get:
+  summary: Get item by ID
+  tags:
+    - Items
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    '200':
+      description: Item details
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Item.yaml
+    '400':
+      description: Invalid ID format
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '404':
+      description: Item not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml
+put:
+  summary: Update an item (admin only)
+  tags:
+    - Items
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/ItemCreateRequest.yaml
+  responses:
+    '200':
+      description: Updated item
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Item.yaml
+    '400':
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '403':
+      description: Forbidden (non-admin)
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ForbiddenError.yaml
+    '404':
+      description: Item not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml
+delete:
+  summary: Delete an item (admin only)
+  tags:
+    - Items
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    '204':
+      description: Item deleted
+    '400':
+      description: Invalid ID format
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ValidationError.yaml
+    '401':
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UnauthorizedError.yaml
+    '403':
+      description: Forbidden (non-admin)
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ForbiddenError.yaml
+    '404':
+      description: Item not found
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotFoundError.yaml

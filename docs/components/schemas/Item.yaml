@@ -1,0 +1,19 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 10
+  name:
+    type: string
+    example: Bananas
+  defaultUnit:
+    type: string
+    nullable: true
+    example: bunch
+  categoryId:
+    type: integer
+    example: 1
+required:
+  - id
+  - name
+  - categoryId
